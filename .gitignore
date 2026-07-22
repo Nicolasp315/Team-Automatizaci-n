@@ -1,0 +1,6 @@
+.env
+venv/
+venv_test/
+__pycache__/
+vectorstores/
+*.pyc
