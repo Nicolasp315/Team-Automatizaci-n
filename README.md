@@ -127,8 +127,8 @@ Permitir que un usuario realice una pregunta en lenguaje natural y que el sistem
 
 ```bash
 # 1. Clonar el repositorio
-git clone https://github.com/Nicolasp315/Team-Automatizaci-n.git
-cd Team-Automatizaci-n
+git clone https://github.com/Nicolasp315/Team_Automatizacion_Netlife.git
+cd Team_Automatizacion_Netlife
 
 # 2. Crear y activar un entorno virtual
 python -m venv entorno
