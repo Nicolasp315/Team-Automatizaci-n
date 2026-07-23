@@ -9,12 +9,13 @@ load_dotenv()
 
 if not os.getenv("GOOGLE_API_KEY"):
     raise ValueError("No se encontró GOOGLE_API_KEY en el archivo .env")
-
+# ====================================================================
+# TRANSFORMAMOS LOS 3 .TXT EN BASES DE DATOS VECTORIALES
 # =====================================================================
 # CONFIGURACIÓN
 # =====================================================================
 embeddings = GoogleGenerativeAIEmbeddings(model="gemini-embedding-001")
-text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)#Chunks de 1000 y 200 de solapamiento
 
 # Mapeo: archivo fuente -> carpeta donde se persiste su índice
 DOCUMENTOS = {
@@ -31,19 +32,19 @@ def construir_indice(nombre_archivo, carpeta_destino):
         return
 
     try:
-        # 1. Cargar y trocear el documento
-        loader = TextLoader(nombre_archivo, encoding="utf-8")
+        
+        loader = TextLoader(nombre_archivo, encoding="utf-8")#Abre el archivo
         documentos = loader.load()
-        fragmentos = text_splitter.split_documents(documentos)
+        fragmentos = text_splitter.split_documents(documentos)#Corta el documento en los chunks
         print(f"  {len(fragmentos)} fragmentos generados.")
 
-        # 2. Crear el vector store vacío y persistido
+        #Se crea/abre uan base de datos vectorial
         db = Chroma(
             embedding_function=embeddings,
             persist_directory=carpeta_destino,
         )
 
-        # 3. Agregar los documentos (esto genera los embeddings vía Gemini)
+        #Toma los chunks y Gemini genera el vector de embeddings
         db.add_documents(fragmentos)
         print(f"  Índice guardado en '{carpeta_destino}'.")
 
@@ -51,8 +52,7 @@ def construir_indice(nombre_archivo, carpeta_destino):
         print(f"  ERROR al indexar '{nombre_archivo}': {e}")
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":#Se llama la funcion para cada documento
     print("=== Construcción de índices vectoriales (Gemini embeddings) ===\n")
     for archivo, carpeta in DOCUMENTOS.items():
         construir_indice(archivo, carpeta)
-    print("\n=== Proceso de indexación finalizado ===")

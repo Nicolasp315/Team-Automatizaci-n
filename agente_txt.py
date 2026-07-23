@@ -1,5 +1,4 @@
 import os
-os.environ["ANONYMIZED_TELEMETRY"] = "False"
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -8,6 +7,7 @@ from langchain_chroma import Chroma
 from langchain_core.prompts import PromptTemplate
 from utils import extraer_texto
 
+os.environ["ANONYMIZED_TELEMETRY"] = "False"
 # =====================================================================
 # CONFIGURACIÓN COMPARTIDA
 # =====================================================================
@@ -23,23 +23,22 @@ def consultar_base_rag(carpeta_indice, pregunta, model, rol_prompt):
     if not os.path.isdir(carpeta_indice):
         return (
             f"Error: no se encontró el índice en '{carpeta_indice}'. "
-            f"Ejecuta build_index.py antes de usar este agente."
+            f"Ejecuta build_index.py antes de usar este agente."#Recordatorio para ejecutar el index
         )
 
     try:
-        # 1. Abrir el índice persistido (no se regeneran embeddings aquí)
-        db = Chroma(persist_directory=carpeta_indice, embedding_function=embeddings)
-        retriever = db.as_retriever(search_kwargs={"k": 3})
+        db = Chroma(persist_directory=carpeta_indice, embedding_function=embeddings)#Cargamos los embeddings de build_index.py
+        retriever = db.as_retriever(search_kwargs={"k": 3})#Tomamos los 3 chunks mas relevantes por consulta
 
-        # 2. Recuperar fragmentos relevantes
+        #Guardamos el contenido de los 3 chunks mas relevantes
         fragmentos_recuperados = retriever.invoke(pregunta)
     except Exception as e:
         return f"Error al acceder a la base de conocimiento: {e}"
 
-    if not fragmentos_recuperados:
+    if not fragmentos_recuperados:#En caso de tener respuestas vacias
         return MENSAJE_SIN_INFO
 
-    contexto = "\n".join([d.page_content for d in fragmentos_recuperados])
+    contexto = "\n".join([d.page_content for d in fragmentos_recuperados])#Juntamos los 3 chunks mas relevantes
 
     # 3. Prompt estricto
     template = (

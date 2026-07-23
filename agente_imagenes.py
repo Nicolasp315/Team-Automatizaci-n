@@ -1,12 +1,12 @@
 import os
-import base64
-import mimetypes
-from langchain_core.messages import HumanMessage
+import base64 #Para convertir datos binarios a texto
+import mimetypes #Detecta el formato (.png .jpg etc)
+from langchain_core.messages import HumanMessage #Un input de texto+imagen
 from utils import extraer_texto
 
 def agente_imagen(ruta_imagen, pregunta_usuario, model):
     if not os.path.exists(ruta_imagen):
-        return f"Error: Image {ruta_imagen} not found."
+        return f"No se encuentra la imagen en la ruta {ruta_imagen}"
 
     mime_type, _ = mimetypes.guess_type(ruta_imagen)
     mime_type = mime_type or "image/png"

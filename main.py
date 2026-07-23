@@ -1,5 +1,5 @@
 import os
-import json
+import json #Para que Gemini responda en formato Json
 from dotenv import load_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import PromptTemplate
@@ -10,12 +10,12 @@ load_dotenv()
 if not os.getenv("GOOGLE_API_KEY"):
     raise ValueError("No se encontró GOOGLE_API_KEY en el archivo .env")
 
-# Importamos los agentes individuales desde tus módulos vectorizados
+# Importamos los agentes individuales
 from agente_txt import agente_beneficios, agente_reglamento, agente_onboarding
 from agente_imagenes import agente_imagen
 
 # =====================================================================
-# PROMPT DEL ORQUESTADOR (Template en inglés para enrutamiento dinámico)
+# PROMPT DEL ORQUESTADOR 
 # =====================================================================
 ORCHESTRATOR_TEMPLATE = """You are the Master Orchestrator Agent for a Human Resources AI System.
 Your job is to analyze the user's input and determine which specialized agents must be invoked to solve the request.
@@ -38,7 +38,7 @@ JSON Structure:
 User Input: {user_input}
 """
 
-def agente_orquestador(pregunta_usuario, ruta_imagen=None):
+def agente_orquestador(pregunta_usuario, ruta_imagen=None):#Funcion para interfaz
     try:
         model = ChatGoogleGenerativeAI(
             model="gemini-3.5-flash",
@@ -51,13 +51,13 @@ def agente_orquestador(pregunta_usuario, ruta_imagen=None):
     # -----------------------------------------------------------------
     # Clasificar intención a través del LLM
     # -----------------------------------------------------------------
-    prompt_orquestador = PromptTemplate.from_template(ORCHESTRATOR_TEMPLATE)
-    cadena_enrutamiento = prompt_orquestador | model
+    prompt_orquestador = PromptTemplate.from_template(ORCHESTRATOR_TEMPLATE)#Plantilla para ingresar la pregunta al prompt
+    cadena_enrutamiento = prompt_orquestador | model#Rellena la plantilla con la pregunta
 
     try:
-        respuesta_enrutador = cadena_enrutamiento.invoke({"user_input": pregunta_usuario})
-        texto_decision = extraer_texto(respuesta_enrutador.content)
-        decision = json.loads(texto_decision.replace("```json", "").replace("```", ""))
+        respuesta_enrutador = cadena_enrutamiento.invoke({"user_input": pregunta_usuario})#Respuesta del modelo, nos dice la intención de la preguntay  agentes seleccionados
+        texto_decision = extraer_texto(respuesta_enrutador.content)#Normalizamos la respuesta a un string
+        decision = json.loads(texto_decision.replace("```json", "").replace("```", ""))#Pasamos el string a un dict
     except Exception:
         # Fallback de emergencia si falla la generación del JSON o la llamada al modelo
         decision = {"selected_agents": ["agente_reglamento"]}
@@ -65,27 +65,26 @@ def agente_orquestador(pregunta_usuario, ruta_imagen=None):
     lista_agentes_elegidos = decision.get("selected_agents", [])
 
     # Si se adjuntó una imagen, forzamos la inclusión del agente de imagen
-    # sin depender de que el LLM lo haya detectado solo por el texto.
     if ruta_imagen and "agente_imagen" not in lista_agentes_elegidos:
         lista_agentes_elegidos.append("agente_imagen")
 
     # -----------------------------------------------------------------
-    # Mapeo y Ejecución de Agentes Seleccionados
+    # Trazabilidad de cada agente
     # -----------------------------------------------------------------
     agentes_participantes = []
     fuentes_utilizadas = []
     respuestas_fragmentadas = []
 
-    MAPPING_TEXTO = {
-        "agente_beneficios": (agente_beneficios, "01_Beneficios_Compensaciones.txt", "agente_beneficios"),
-        "agente_reglamento": (agente_reglamento, "02_Reglamento_Interno.txt", "agente_reglamento"),
-        "agente_onboarding": (agente_onboarding, "03_Reclutamiento_Onboarding.txt", "agente_onboarding"),
+    MAPPING_TEXTO = {#Relacionamos la función con el nombre del txt y el nombre presentado en la trazabilidad
+        "agente_beneficios": (agente_beneficios, "01_Beneficios_Compensaciones.txt", "Agente de Beneficios y Compensaciones"),
+        "agente_reglamento": (agente_reglamento, "02_Reglamento_Interno.txt", "Agente del Reglamento Interno"),
+        "agente_onboarding": (agente_onboarding, "03_Reclutamiento_Onboarding.txt", "Agente de Reclutamiento y Onboarding"),
     }
 
     # 1. Evaluar e invocar agentes de texto
     for agente_id in lista_agentes_elegidos:
         if agente_id in MAPPING_TEXTO:
-            funcion_agente, archivo_txt, nombre_exacto = MAPPING_TEXTO[agente_id]
+            funcion_agente, archivo_txt, nombre_exacto = MAPPING_TEXTO[agente_id]#Desempaquetamos: Funcion, nombre del txt y nombre exacto
 
             agentes_participantes.append(nombre_exacto)
             fuentes_utilizadas.append(archivo_txt)
@@ -93,7 +92,7 @@ def agente_orquestador(pregunta_usuario, ruta_imagen=None):
             try:
                 res_txt = funcion_agente(pregunta_usuario, model)
             except Exception as e:
-                res_txt = f"Error al consultar {nombre_exacto}: {e}"
+                res_txt = f"Error al consultar {nombre_exacto}: {e}"#Respuesta si ocurre un eror(Cuota, conexión, etc)
 
             respuestas_fragmentadas.append(f"**{nombre_exacto} Response:**\n{res_txt}")
 
@@ -119,6 +118,8 @@ def agente_orquestador(pregunta_usuario, ruta_imagen=None):
     # -----------------------------------------------------------------
     # Consolidación por el Orquestador e impresión Final
     # -----------------------------------------------------------------
+    # Aqui pasamos todas las respuestas parciales de los agentes y el agente orquestador se decide por una
+    # En caso de que respondan 2 o mas agentes, el orquestador arma una sola respuesta coherente
     nombres_agentes = ", ".join(agentes_participantes)
     union_respuestas = "\n\n".join(respuestas_fragmentadas)
 
@@ -145,6 +146,7 @@ Final Consolidated Answer (Write this beautifully in Spanish):"""
     except Exception as e:
         respuesta_consolidada = f"Error al consolidar la respuesta final: {e}"
 
+    #Agentes participantes
     template_final = (
         f"\n{respuesta_consolidada}\n\n"
         f"---\n"

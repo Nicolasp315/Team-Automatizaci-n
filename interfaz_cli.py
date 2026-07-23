@@ -17,12 +17,12 @@ def mostrar_bienvenida():
 
 def main():
     mostrar_bienvenida()
-    ruta_imagen_pendiente = None
+    ruta_imagen_pendiente = None #La activamos si el usuario sube una imagen
 
     while True:
         entrada = input("Tú: ").strip()
 
-        if not entrada:
+        if not entrada:#Evitamos entradas vacias
             continue
 
         # Comando para salir
@@ -32,7 +32,7 @@ def main():
 
         # Comando para adjuntar imagen
         if entrada.lower().startswith("/imagen"):
-            partes = entrada.split(maxsplit=1)
+            partes = entrada.split(maxsplit=1)#Separamos el input para obtener la ruta de la imagen
             if len(partes) < 2:
                 print("Uso correcto: /imagen ruta/a/la/imagen.png\n")
                 continue
@@ -53,7 +53,7 @@ def main():
             respuesta = agente_orquestador(entrada, ruta_imagen=ruta_imagen_pendiente)
             print(respuesta)
         except Exception as e:
-            print(f"Ocurrió un error inesperado al procesar tu consulta: {e}")
+            print(f"Ocurrió un error inesperado al procesar tu consulta: {e}")#Esto puede ocurrir en caso de agotar la cuota de Geminis o algun otro error
         finally:
             # La imagen solo aplica a la siguiente pregunta, luego se limpia
             ruta_imagen_pendiente = None
