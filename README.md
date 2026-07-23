@@ -123,6 +123,8 @@ Permitir que un usuario realice una pregunta en lenguaje natural y que el sistem
 
 ### 6.2 Instalación
 
+- Debemos abrir una carpeta nueva en VSCode y abrimos su terminal
+
 ```bash
 # 1. Clonar el repositorio
 git clone https://github.com/Nicolasp315/Team-Automatizaci-n.git
@@ -150,7 +152,6 @@ Crea un archivo ".env" y copia el formato de ".env.example" con tu clave API rea
 GOOGLE_API_KEY=tu_api_key_real_aqui
 ```
 
-> **Importante:** el archivo `.env` nunca debe subirse al repositorio. Ya está incluido en `.gitignore`.
 
 ### 6.4 Generar los índices vectoriales (paso obligatorio antes del primer uso) ejecutando build_index.py
 
@@ -171,7 +172,7 @@ Comandos disponibles dentro de la CLI:
 | Comando | Descripción |
 |---|---|
 | `<pregunta>` | Envía una pregunta en lenguaje natural al sistema |
-| `/imagen <ruta>` | Adjunta una imagen a la siguiente pregunta (para el agente multimodal) |
+| `/imagen <ruta>` | Adjunta una imagen a la siguiente pregunta (para el agente multimodal) | Ejemplo /imagen C:\Users\nicol\Documents\Proyecto Final Netlife\imagen_prueba.png
 | `/salir` | Termina el programa |
 
 ### Ejemplos de uso
