@@ -125,27 +125,26 @@ Permitir que un usuario realice una pregunta en lenguaje natural y que el sistem
 
 ```bash
 # 1. Clonar el repositorio
-git clone <https://github.com/Nicolasp315/Team-Automatizaci-n.git>
-cd <Team-Automatizaci-n>
+git clone https://github.com/Nicolasp315/Team-Automatizaci-n.git
+cd Team-Automatizaci-n
 
 # 2. Crear y activar un entorno virtual
-python -m venv venv
-venv\Scripts\activate      # Windows
-source venv/bin/activate   # macOS / Linux
+python -m venv entorno
+entorno\Scripts\activate      # Windows
+source entorno/bin/activate   # macOS / Linux
 
-# 3. Instalar dependencias
+en caso de tener errores para activar el entorno hay que ejecutar:
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+
+Y reintentar activar el entorno
+
+# 3. Instalar dependencias dentro del entorno
 pip install -r requirements.txt
 ```
 
 ### 6.3 Configurar variables de entorno
 
-Copia el archivo de ejemplo y agrega tu API key real:
-
-```bash
-cp .env.example .env
-```
-
-Edita `.env` y reemplaza el valor:
+Crea un archivo ".env" y copia el formato de ".env.example" con tu clave API real:
 
 ```
 GOOGLE_API_KEY=tu_api_key_real_aqui
@@ -153,7 +152,7 @@ GOOGLE_API_KEY=tu_api_key_real_aqui
 
 > **Importante:** el archivo `.env` nunca debe subirse al repositorio. Ya está incluido en `.gitignore`.
 
-### 6.4 Generar los índices vectoriales (paso obligatorio antes del primer uso)
+### 6.4 Generar los índices vectoriales (paso obligatorio antes del primer uso) ejecutando build_index.py
 
 ```bash
 python build_index.py
