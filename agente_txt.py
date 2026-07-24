@@ -1,13 +1,14 @@
 import os
+os.environ["ANONYMIZED_TELEMETRY"] = "False"
+
 from dotenv import load_dotenv
 load_dotenv()
 
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_chroma import Chroma
+from chromadb.config import Settings
 from langchain_core.prompts import PromptTemplate
 from utils import extraer_texto
-
-os.environ["ANONYMIZED_TELEMETRY"] = "False"
 # =====================================================================
 # CONFIGURACIÓN COMPARTIDA
 # =====================================================================
@@ -27,7 +28,10 @@ def consultar_base_rag(carpeta_indice, pregunta, model, rol_prompt):
         )
 
     try:
-        db = Chroma(persist_directory=carpeta_indice, embedding_function=embeddings)#Cargamos los embeddings de build_index.py
+        db = Chroma(
+            persist_directory=carpeta_indice,
+            embedding_function=embeddings,
+            client_settings=Settings(anonymized_telemetry=False),)#Cargamos los embeddings de build_index.py
         retriever = db.as_retriever(search_kwargs={"k": 3})#Tomamos los 3 chunks mas relevantes por consulta
 
         #Guardamos el contenido de los 3 chunks mas relevantes

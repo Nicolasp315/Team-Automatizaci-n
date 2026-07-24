@@ -1,5 +1,7 @@
 import os
+os.environ["ANONYMIZED_TELEMETRY"] = "False"
 from dotenv import load_dotenv
+from chromadb.config import Settings
 from langchain_community.document_loaders import TextLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
@@ -40,8 +42,9 @@ def construir_indice(nombre_archivo, carpeta_destino):
 
         #Se crea/abre uan base de datos vectorial
         db = Chroma(
-            embedding_function=embeddings,
-            persist_directory=carpeta_destino,
+        embedding_function=embeddings,
+        persist_directory=carpeta_destino,
+        client_settings=Settings(anonymized_telemetry=False),
         )
 
         #Toma los chunks y Gemini genera el vector de embeddings
