@@ -1,64 +1,72 @@
 import os
+from art import text2art
+from rich.console import Console
+from rich.panel import Panel
+from rich.markdown import Markdown
+from rich.text import Text
+
 from main import agente_orquestador
 
-def limpiar_pantalla():
-    os.system("cls" if os.name == "nt" else "clear")
+console = Console()
 
 def mostrar_bienvenida():
-    print("=" * 70)
-    print(" MESA DE AYUDA IA - RECURSOS HUMANOS - PATITO S.A.")
-    print("=" * 70)
-    print("Escribe tu pregunta en lenguaje natural y presiona Enter.")
-    print("Comandos disponibles:")
-    print("  /imagen <ruta>   -> adjunta una imagen a tu próxima pregunta")
-    print("  /salir           -> termina el programa")
-    print("=" * 70)
-    print()
+    banner = text2art("Patito S.A.", font="small")
+    console.print(Text(banner, style="bold cyan"))
+    console.print(Panel.fit(
+        "[bold]Mesa de Ayuda IA — Recursos Humanos[/bold]\n\n"
+        "Escribe tu pregunta en lenguaje natural y presiona Enter.\n\n"
+        "[dim]Comandos disponibles:[/dim]\n"
+        "  [yellow]/imagen[/yellow] <ruta>   → adjunta una imagen a tu próxima pregunta\n"
+        "  [yellow]/salir[/yellow]           → termina el programa",
+        border_style="cyan",
+        title="Bienvenido",
+    ))
+    console.print()
 
 def main():
     mostrar_bienvenida()
-    ruta_imagen_pendiente = None #La activamos si el usuario sube una imagen
+    ruta_imagen_pendiente = None
 
     while True:
-        entrada = input("Tú: ").strip()
+        entrada = console.input("[bold green]Tú:[/bold green] ").strip()
 
-        if not entrada:#Evitamos entradas vacias
+        if not entrada:
             continue
 
-        # Comando para salir
         if entrada.lower() in ("/salir", "salir", "exit", "quit"):
-            print("\nGracias por usar la Mesa de Ayuda IA de RR. HH. ¡Hasta pronto!")
+            console.print("\n[bold cyan]Gracias por usar la Mesa de Ayuda IA de RR. HH. ¡Hasta pronto![/bold cyan]")
             break
 
-        # Comando para adjuntar imagen
         if entrada.lower().startswith("/imagen"):
-            partes = entrada.split(maxsplit=1)#Separamos el input para obtener la ruta de la imagen
+            partes = entrada.split(maxsplit=1)
             if len(partes) < 2:
-                print("Uso correcto: /imagen ruta/a/la/imagen.png\n")
+                console.print("[red]Uso correcto:[/red] /imagen ruta/a/la/imagen.png\n")
                 continue
 
             ruta = partes[1].strip()
             if not os.path.exists(ruta):
-                print(f"No se encontró el archivo '{ruta}'. Verifica la ruta.\n")
+                console.print(f"[red]No se encontró el archivo '{ruta}'. Verifica la ruta.[/red]\n")
                 continue
 
             ruta_imagen_pendiente = ruta
-            print(f"Imagen '{ruta}' adjuntada. Ahora escribe tu pregunta sobre ella.\n")
+            console.print(f"[green]Imagen '{ruta}' adjuntada.[/green] Ahora escribe tu pregunta sobre ella.\n")
             continue
 
-        # Pregunta normal (con o sin imagen adjunta)
-        print("\nProcesando tu consulta, un momento...\n")
-
         try:
-            respuesta = agente_orquestador(entrada, ruta_imagen=ruta_imagen_pendiente)
-            print(respuesta)
+            with console.status("[bold cyan]Procesando tu consulta...[/bold cyan]", spinner="dots"):
+                respuesta = agente_orquestador(entrada, ruta_imagen=ruta_imagen_pendiente)
+
+            console.print(Panel(
+                Markdown(respuesta),
+                title="[bold]Respuesta[/bold]",
+                border_style="green",
+            ))
         except Exception as e:
-            print(f"Ocurrió un error inesperado al procesar tu consulta: {e}")#Esto puede ocurrir en caso de agotar la cuota de Geminis o algun otro error
+            console.print(f"[bold red]Ocurrió un error inesperado al procesar tu consulta:[/bold red] {e}")
         finally:
-            # La imagen solo aplica a la siguiente pregunta, luego se limpia
             ruta_imagen_pendiente = None
 
-        print("\n" + "-" * 70 + "\n")
+        console.print()
 
 
 if __name__ == "__main__":
