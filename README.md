@@ -123,8 +123,13 @@ Permitir que un usuario realice una pregunta en lenguaje natural y que el sistem
 
 ### 6.2 Instalación
 
-- Debemos abrir una carpeta nueva en VSCode y abrimos su terminal
-
+- Creamos una carpeta para guardar el proyecto
+```bash
+cd desktop
+mkdir Proyecto_Team_Automatizacion
+cd Proyecto_Team_Automatizacion
+```
+- Repositorio
 ```bash
 # 1. Clonar el repositorio
 git clone https://github.com/Nicolasp315/Team_Automatizacion_Netlife.git
@@ -149,7 +154,8 @@ pip install -r requirements.txt
 Crea un archivo ".env" y copia el formato de ".env.example" con tu clave API real:
 
 ```
-GOOGLE_API_KEY=tu_api_key_real_aqui
+copy ".env.example" ".env"
+echo GOOGLE_API_KEY=tu_api_key_real_aqui > .env
 ```
 
 
